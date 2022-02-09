@@ -1,0 +1,5 @@
+dependencies {
+	compileOnly group: "com.liferay.portal", name: "release.portal.api"
+	//compileOnly group: 'com.liferay', name: 'com.liferay.asset.list.service' //, version: '3.0.21'
+
+}
