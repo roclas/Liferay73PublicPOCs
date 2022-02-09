@@ -1,0 +1,4 @@
+Bundle-Name: portlet2TestResourceBundle
+Bundle-SymbolicName: portlet2TestResourceBundle
+Bundle-Version: 1.0.0
+Export-Package: portlet2TestResourceBundle.constants
