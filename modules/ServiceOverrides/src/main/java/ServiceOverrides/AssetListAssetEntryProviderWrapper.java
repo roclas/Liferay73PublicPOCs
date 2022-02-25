@@ -16,8 +16,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -112,7 +110,15 @@ public class AssetListAssetEntryProviderWrapper implements AssetListAssetEntryPr
 	//////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////
 
+	@Override
+	public List<AssetEntry> getAssetEntries( AssetListEntry assetListEntry, long[] segmentsEntryIds, String userId, int start, int end) {
+		List<AssetEntry> result = _wrapped.getAssetEntries(assetListEntry,segmentsEntryIds,userId,start,end);
+		result.sort((a,b)->b.getModifiedDate().compareTo(a.getModifiedDate()));//TODO:hardcoded 
+		return result;
+	
+	}
 
+	/*
 	@Override
 	public List<AssetEntry> getAssetEntries( AssetListEntry assetListEntry, long[] segmentsEntryIds, String userId, int start, int end) {
 		String newUserId = String.valueOf(PrincipalThreadLocal.getUserId());
@@ -177,6 +183,7 @@ public class AssetListAssetEntryProviderWrapper implements AssetListAssetEntryPr
 
 			return Collections.emptyList();
 	}
+	*/
 	
 	@Reference private AssetHelper _assetHelper;
 	@Reference(target = "(component.name=com.liferay.asset.list.internal.asset.entry.provider.AssetListAssetEntryProviderImpl)")
