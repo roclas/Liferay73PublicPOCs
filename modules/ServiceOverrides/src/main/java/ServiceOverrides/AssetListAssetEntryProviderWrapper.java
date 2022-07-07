@@ -11,15 +11,13 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.SearchContext;
-import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,38 +60,75 @@ public class AssetListAssetEntryProviderWrapper implements AssetListAssetEntryPr
 	
 	@Override
 	public List<AssetEntry> getAssetEntries( AssetListEntry assetListEntry, long segmentsEntryId) {
-		return getAssetEntries( assetListEntry, segmentsEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		try { 
+			_log.info("AssetListAssetentryProviderWrapper customization (1)");
+			return getAssetEntries( assetListEntry, segmentsEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		}catch(Throwable e){ 
+			_log.error("customization's side effect, getting back to default (1)");
+			return _wrapped.getAssetEntries( assetListEntry, segmentsEntryId);
+		}
 	}
 
 	@Override
 	public List<AssetEntry> getAssetEntries( AssetListEntry assetListEntry, long segmentsEntryId, int start, int end) {
-		return getAssetEntries( assetListEntry, new long[] {segmentsEntryId}, start, end);
+		try{
+			_log.info("AssetListAssetentryProviderWrapper customization (2)");
+			return getAssetEntries( assetListEntry, new long[] {segmentsEntryId}, start, end);
+		}catch(Throwable e) {
+			_log.error("customization's side effect, getting back to default (2)");
+			return _wrapped.getAssetEntries( assetListEntry, new long[] {segmentsEntryId}, start, end);
+		}
+		
 	}
 
 	@Override
 	public List<AssetEntry> getAssetEntries( AssetListEntry assetListEntry, long[] segmentsEntryIds) {
-		return getAssetEntries( assetListEntry, segmentsEntryIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		try{
+			_log.info("AssetListAssetentryProviderWrapper customization (3)");
+			return getAssetEntries( assetListEntry, segmentsEntryIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		}catch(Throwable e){
+			_log.error("customization's side effect, getting back to default (3)");
+			return _wrapped.getAssetEntries( assetListEntry, segmentsEntryIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		}
 	}
 
 	@Override
 	public List<AssetEntry> getAssetEntries( AssetListEntry assetListEntry, long[] segmentsEntryIds, int start, int end) {
-		return getAssetEntries( assetListEntry, segmentsEntryIds, StringPool.BLANK, start, end);
+		try{
+			_log.info("AssetListAssetentryProviderWrapper customization (4)");
+			return getAssetEntries( assetListEntry, segmentsEntryIds, StringPool.BLANK, start, end);
+		}catch(Throwable e){
+			_log.error("customization's side effect, getting back to default (4)");
+			return _wrapped.getAssetEntries( assetListEntry, segmentsEntryIds, StringPool.BLANK, start, end);
+		}
 	}
 
 	@Override
 	public List<AssetEntry> getAssetEntries( AssetListEntry assetListEntry, long[] segmentsEntryIds, String userId) {
-		return getAssetEntries( assetListEntry, segmentsEntryIds, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		try{
+			_log.info("AssetListAssetentryProviderWrapper customization (5)");
+			return getAssetEntries( assetListEntry, segmentsEntryIds, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		}catch(Throwable e){
+			_log.error("customization's side effect, getting back to default (5)");
+			return _wrapped.getAssetEntries( assetListEntry, segmentsEntryIds, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		}
 	}
 	
 	@Override
 	public int getAssetEntriesCount( AssetListEntry assetListEntry, long segmentsEntryId) {
-		return getAssetEntriesCount( assetListEntry, new long[] {segmentsEntryId});
+		try{
+			_log.info("AssetListAssetentryProviderWrapper customization (6)");
+			return getAssetEntriesCount( assetListEntry, new long[] {segmentsEntryId});
+		}catch(Throwable e){
+			_log.error("customization's side effect, getting back to default (6)");
+			return _wrapped.getAssetEntriesCount( assetListEntry, new long[] {segmentsEntryId});}
 	}
 
 	@Override
 	public int getAssetEntriesCount( AssetListEntry assetListEntry, long[] segmentsEntryIds) {
-		return getAssetEntriesCount( assetListEntry, segmentsEntryIds, StringPool.BLANK);
+			return _wrapped.getAssetEntriesCount( assetListEntry, segmentsEntryIds);
 	}
+	
 	@Override
 	public AssetEntryQuery getAssetEntryQuery(AssetListEntry assetListEntry, long segmentsEntryId) {
 		return _wrapped.getAssetEntryQuery(assetListEntry, segmentsEntryId) ;
@@ -110,11 +145,57 @@ public class AssetListAssetEntryProviderWrapper implements AssetListAssetEntryPr
 	//////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////
 
+	private int maxNumberOfElements=10;
+
 	@Override
 	public List<AssetEntry> getAssetEntries( AssetListEntry assetListEntry, long[] segmentsEntryIds, String userId, int start, int end) {
-		List<AssetEntry> result = _wrapped.getAssetEntries(assetListEntry,segmentsEntryIds,userId,start,end);
+		
+		List<AssetEntry> result=new ArrayList();
+		start=0;end=maxNumberOfElements;//TODO: hardcoded, setting the limits, put the real limit here
+
+		/*
+		System.out.println(String.format("\n\n\n\ngetting Asset Entries (start=%s,end=%s)!!!!\n\n\n\n\n",start,end));//TODO:remove
+		for(long s:segmentsEntryIds) { 
+			System.out.println(String.format("segmentEntryId=%s",s)); 
+			long[] entries= {s};
+			List<AssetEntry> r= _wrapped.getAssetEntries(assetListEntry,entries,userId,start,end);
+			r.sort((a,b)->b.getModifiedDate().compareTo(a.getModifiedDate()));//TODO:hardcoded 
+			result.addAll(r);
+		}//TODO:remove
+		*/
+		
+		System.out.println(String.format("\n\n\n\ngetting indexed Asset Entries (start=%s,end=%s)!!!!\n\n\n\n\n",start,end));//TODO:remove
+		for(long s:segmentsEntryIds) { 
+			System.out.println(String.format("segmentEntryId=%s",s)); 
+			long[] entries= {s};
+			AssetEntryQuery q = _wrapped.getAssetEntryQuery(assetListEntry, entries,userId);
+			q.setOrderByCol1("modifiedDate");
+			q.setOrderByCol2("title");
+			q.setStart(start);
+			q.setEnd(end);
+			List<AssetEntry> r = _search(assetListEntry.getCompanyId(),q);
+			result.addAll(r);
+		}//TODO:remove
+	
+		/*
+		//PERFORMANCE-OPTIMIZED
+		AssetEntryQuery q = _wrapped.getAssetEntryQuery(assetListEntry, segmentsEntryIds,userId);
+		q.setOrderByCol1("modifiedDate");
+		q.setOrderByCol2("title");
+		q.setStart(start);
+		q.setEnd(end);
+		List<AssetEntry> r = _search(assetListEntry.getCompanyId(),q);
+		*/
+
+		//NOT OPTIMIZED FOR PERFORMANCE
+		//List<AssetEntry> result = _wrapped.getAssetEntries(assetListEntry,segmentsEntryIds,userId,start,end);
 		result.sort((a,b)->b.getModifiedDate().compareTo(a.getModifiedDate()));//TODO:hardcoded 
-		return result;
+		//return result;
+
+
+		System.out.println(String.format("\n\n\n\nwe have %s elements !!!!\n\n\n\n\n",result.size()));//TODO:remove
+
+		return result.stream().limit(maxNumberOfElements).collect(Collectors.toList());
 	
 	}
 
@@ -146,6 +227,7 @@ public class AssetListAssetEntryProviderWrapper implements AssetListAssetEntryPr
 	
 	}
 	
+	*/
 
 	
 	private List<AssetEntry> _search( long companyId, AssetEntryQuery assetEntryQuery) {
@@ -166,9 +248,9 @@ public class AssetListAssetEntryProviderWrapper implements AssetListAssetEntryPr
 
 			searchContext.setClassTypeIds(assetEntryQuery.getClassTypeIds());
 			searchContext.setCompanyId(companyId);
-			searchContext.setEnd(assetEntryQuery.getEnd());
 			searchContext.setKeywords(assetEntryQuery.getKeywords());
 			searchContext.setStart(assetEntryQuery.getStart());
+			searchContext.setEnd(assetEntryQuery.getEnd());
 
 			try {
 				Hits hits = _assetHelper.search(
@@ -183,14 +265,15 @@ public class AssetListAssetEntryProviderWrapper implements AssetListAssetEntryPr
 
 			return Collections.emptyList();
 	}
-	*/
 	
+    //@Inject private AssetHelper _assetHelper;
 	@Reference private AssetHelper _assetHelper;
 	@Reference(target = "(component.name=com.liferay.asset.list.internal.asset.entry.provider.AssetListAssetEntryProviderImpl)")
 	private AssetListAssetEntryProvider _wrapped;
 	
 	private static final Log _log = LogFactoryUtil.getLog( AssetListAssetEntryProviderWrapper.class);
 	
+
 
 }
 
