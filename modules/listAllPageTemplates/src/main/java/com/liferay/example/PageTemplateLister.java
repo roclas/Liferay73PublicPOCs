@@ -103,7 +103,7 @@ public class PageTemplateLister {
 		PermissionThreadLocal.setPermissionChecker( _liberalPermissionCheckerFactory.create(testUser));
 
 		try {
-			File file=new File("/home/carlos/projects/nordea/automation/page2.zip");
+			File file=new File("/home/myuser/projects/myproject/automation/page2.zip");
 			List<LayoutPageTemplatesImporterResultEntry> result = importer.importFile(testUser.getUserId(), groupId, collectionId, file, true);
 			System.out.println("File's path = "+file.getAbsolutePath());
 			System.out.println("File's space = "+file.getTotalSpace());
